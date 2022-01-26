@@ -7,23 +7,17 @@ const TEST_URI = 'https://test_uri/'
 
 const provider = waffle.provider
 
-describe('ColoredNumbers', function () {
+describe('TokenproofFoundersCircleNFT', function () {
   let addr1, addr2, addr3, addr4
-  let FungibleToken
-  let ColoredNumbers
+  let TokenproofFoundersCircleNFT
   let nftContract
-  let erc20Contract
 
   beforeEach(async function () {
     ;[addr1, addr2, addr3, addr4, _] = await ethers.getSigners()
 
-    ColoredNumbers = await ethers.getContractFactory('ColoredNumbers')
-    nftContract = await ColoredNumbers.deploy(TEST_URI)
+    TokenproofFoundersCircleNFT = await ethers.getContractFactory('TokenproofFoundersCircleNFT')
+    nftContract = await TokenproofFoundersCircleNFT.deploy(TEST_URI)
     await nftContract.deployed()
-
-    FungibleToken = await ethers.getContractFactory('FungibleToken')
-    erc20Contract = await FungibleToken.deploy('Test Token', 'TEST', 100)
-    await erc20Contract.deployed()
   })
 
   it('Should have 0 supply after deployment', async function () {
@@ -31,8 +25,6 @@ describe('ColoredNumbers', function () {
   })
 
   it('Should not mint if no value sent', async function () {
-    await nftContract.deployed()
-
     let err = null
     try {
       await nftContract.awardItem(1, { value: 0 })
@@ -48,15 +40,35 @@ describe('ColoredNumbers', function () {
     })
 
     expect(await nftContract.totalSupply()).to.equal(1)
-    expect(await nftContract.tokenURI(1)).to.equal(TEST_URI + '1.json')
+    expect(await nftContract.tokenURI(1)).to.equal(TEST_URI)
   })
 
-  it('Should be able to mint NFT #1, mint TEST token, and sent it to NFT #1', async function () {
+  it('Should not be able to mint two at once', async function () {
+    const NUM = 2
+    let err = null
+    try {
+      await nftContract.awardItem(NUM, { value: Web3Utils.toWei(NUM * MINT_PRICE, 'ether') })
+    } catch (error) {
+      err = error
+    }
+    assert.ok(err instanceof Error)
+  })
+
+  it('Should not be able to mint two in sequence for same wallet', async function () {
+      // should succeed
     await nftContract.awardItem(1, {
       value: Web3Utils.toWei(MINT_PRICE, 'ether'),
     })
 
-    expect(await erc20Contract.balanceOf(addr1.address)).to.equal(100)
-    await erc20Contract.approve(nftContract.address, 100)
+    // should fail because already minted from that wallet
+    let err = null
+    try {
+        await nftContract.awardItem(1, {
+          value: Web3Utils.toWei(MINT_PRICE, 'ether'),
+        })
+    } catch (error) {
+      err = error
+    }
+    assert.ok(err instanceof Error)
   })
 })

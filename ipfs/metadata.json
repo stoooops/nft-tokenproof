@@ -1,0 +1,10 @@
+{
+    "description": "tokenproof Founder's Circle",
+    "image": "ipfs://QmWWq7sGw753WARshj1PeeTex28GhFaCwTjLxZvN25V9pP",
+    "attributes": [
+        {
+            "trait_type": "membership",
+            "value": "Founder's Circle"
+        }
+    ]
+}

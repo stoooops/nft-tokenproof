@@ -14,12 +14,12 @@ async function main() {
   // await hre.run('compile');
 
   // We get the contract to deploy
-  const ColoredNumbers = await hre.ethers.getContractFactory('ColoredNumbers')
-  const token = await ColoredNumbers.deploy('https://test_uri/')
+  const ColoredNumbers = await hre.ethers.getContractFactory('TokenproofFoundersCircleNFT')
+  const token = await ColoredNumbers.deploy('ipfs://QmQvcDYz5CVMdt2EeYyGAQJeZ83iWACpPqEEVo2Tb3STjK')
 
   await token.deployed()
 
-  console.log('ColoredNumbers deployed to:', token.address)
+  console.log('TokenproofFoundersCircleNFT deployed to:', token.address)
 }
 
 // We recommend this pattern to be able to use async/await everywhere
