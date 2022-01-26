@@ -24,8 +24,6 @@ describe('TokenproofFoundersCircleNFT', function () {
   let TokenproofFoundersCircleNFT
   let nftContract
 
-
-
   const provider = waffle.provider
 
   before(async function () {
@@ -36,7 +34,6 @@ describe('TokenproofFoundersCircleNFT', function () {
   })
 
   beforeEach(async function () {
-
     TokenproofFoundersCircleNFT = await ethers.getContractFactory('TokenproofFoundersCircleNFT')
     nftContract = await TokenproofFoundersCircleNFT.deploy(TEST_URI)
     await nftContract.deployed()
@@ -56,11 +53,11 @@ describe('TokenproofFoundersCircleNFT', function () {
 
   describe("Mint", function () {
 
-    describe("Whitelist", function () {
+    describe("freeSale", function () {
 
         it('Should be able to allowlist mint NFT #1', async function () {
             const merkleProof = merkleTree.getHexProof(keccak256(allowlist1.address));
-            await nftContract.connect(allowlist1).presale(merkleProof)
+            await nftContract.connect(allowlist1).freeSale(merkleProof)
 
             expect(await nftContract.totalSupply()).to.equal(1)
             expect(await nftContract.tokenURI(1)).to.equal(TEST_URI)
@@ -69,7 +66,7 @@ describe('TokenproofFoundersCircleNFT', function () {
         it('Should be able to allowlist mint NFT #1, #2, #3', async function () {
             for (const addr of [allowlist1, allowlist2, allowlist3]) {
                 const merkleProof = merkleTree.getHexProof(keccak256(addr.address));
-                await nftContract.connect(addr).presale(merkleProof)
+                await nftContract.connect(addr).freeSale(merkleProof)
             }
 
             expect(await nftContract.totalSupply()).to.equal(3)
@@ -77,11 +74,11 @@ describe('TokenproofFoundersCircleNFT', function () {
 
         it('Should be able to allowlist mint NFT #1 but not a second', async function () {
             const merkleProof = merkleTree.getHexProof(keccak256(allowlist1.address));
-            await nftContract.connect(allowlist1).presale(merkleProof)
+            await nftContract.connect(allowlist1).freeSale(merkleProof)
 
             let err = null
             try {
-                await nftContract.connect(allowlist1).presale(merkleProof)
+                await nftContract.connect(allowlist1).freeSale(merkleProof)
             } catch (error) {
                 err = error
             }
@@ -95,7 +92,7 @@ describe('TokenproofFoundersCircleNFT', function () {
             // transact with #2
             let err = null
             try {
-                await nftContract.connect(allowlist2).presale(merkleProof)
+                await nftContract.connect(allowlist2).freeSale(merkleProof)
             } catch (error) {
                 err = error
             }
@@ -104,7 +101,7 @@ describe('TokenproofFoundersCircleNFT', function () {
             // transact with other
             let err2 = null
             try {
-                await nftContract.connect(other).presale(merkleProof)
+                await nftContract.connect(other).freeSale(merkleProof)
             } catch (error) {
                 err2 = error
             }
@@ -112,24 +109,128 @@ describe('TokenproofFoundersCircleNFT', function () {
         })
     });
 
-    describe("Happy Case", function () {
+    describe("preSale", function () {
 
-        it('Should be able to pay to mint NFT #1', async function () {
-            await nftContract.awardItem(1, {
-            value: Web3Utils.toWei(MINT_PRICE, 'ether'),
+        it('Should be able to allowlist mint NFT #1', async function () {
+            const merkleProof = merkleTree.getHexProof(keccak256(allowlist1.address));
+            await nftContract.connect(allowlist1).preSale(merkleProof, {
+                value: Web3Utils.toWei(MINT_PRICE, 'ether'),
             })
 
             expect(await nftContract.totalSupply()).to.equal(1)
             expect(await nftContract.tokenURI(1)).to.equal(TEST_URI)
         })
+
+        it('Should not mint if no value sent', async function () {
+            const merkleProof = merkleTree.getHexProof(keccak256(allowlist1.address));
+            let err = null
+            try {
+                await nftContract.connect(allowlist1).preSale(merkleProof, {
+                    value: 0,
+                })
+            } catch (error) {
+                err = error
+            }
+            assert.ok(err instanceof Error)
+        })
+
+        it('Should be able to allowlist mint NFT #1, #2, #3', async function () {
+            for (const addr of [allowlist1, allowlist2, allowlist3]) {
+                const merkleProof = merkleTree.getHexProof(keccak256(addr.address));
+                await nftContract.connect(addr).preSale(merkleProof, {
+                    value: Web3Utils.toWei(MINT_PRICE, 'ether'),
+                })
+            }
+
+            expect(await nftContract.totalSupply()).to.equal(3)
+        })
+
+        it('Should be able to allowlist mint NFT #1 but not a second', async function () {
+            const merkleProof = merkleTree.getHexProof(keccak256(allowlist1.address));
+            await nftContract.connect(allowlist1).preSale(merkleProof, {
+                value: Web3Utils.toWei(MINT_PRICE, 'ether'),
+            })
+
+            let err = null
+            try {
+                await nftContract.connect(allowlist1).preSale(merkleProof, {
+                    value: Web3Utils.toWei(MINT_PRICE, 'ether'),
+                })
+            } catch (error) {
+                err = error
+            }
+            assert.ok(err instanceof Error)
+        })
+
+        it('Should not be able to use wrong MerkleProof', async function () {
+            // merkle proof for #1
+            const merkleProof = merkleTree.getHexProof(keccak256(allowlist1.address));
+
+            // transact with #2
+            let err = null
+            try {
+                await nftContract.connect(allowlist2).preSale(merkleProof, {
+                    value: Web3Utils.toWei(MINT_PRICE, 'ether'),
+                })
+            } catch (error) {
+                err = error
+            }
+            assert.ok(err instanceof Error)
+
+            // transact with other
+            let err2 = null
+            try {
+                await nftContract.connect(other).preSale(merkleProof, {
+                    value: Web3Utils.toWei(MINT_PRICE, 'ether'),
+                })
+            } catch (error) {
+                err2 = error
+            }
+            assert.ok(err2 instanceof Error)
+        })
     });
 
-    describe("Error Cases", function () {
+    describe("publicSale", function () {
+
+        it('Should be able to pay to mint NFT #1', async function () {
+            await nftContract.publicSale(1, {
+                value: Web3Utils.toWei(MINT_PRICE, 'ether'),
+            })
+
+            expect(await nftContract.totalSupply()).to.equal(1)
+            expect(await nftContract.tokenURI(1)).to.equal(TEST_URI)
+        })
+
+        it('Should be able to pay to mint from different accounts', async function () {
+            for (const addr of await ethers.getSigners()) {
+                await nftContract.connect(addr).publicSale(1, {
+                    value: Web3Utils.toWei(MINT_PRICE, 'ether'),
+                })
+            }
+        })
+
+        // TODO check if desired
+        it('Should be not be able to mint if completed preSale', async function () {
+            const merkleProof = merkleTree.getHexProof(keccak256(allowlist1.address));
+            await nftContract.connect(allowlist1).preSale(merkleProof, {
+                value: Web3Utils.toWei(MINT_PRICE, 'ether'),
+            })
+
+            let err = null
+            try {
+                await nftContract.connect(allowlist1).publicSale(1, {
+                        value: Web3Utils.toWei(MINT_PRICE, 'ether'),
+                    })
+            } catch (error) {
+                err = error
+            }
+            assert.ok(err instanceof Error)
+        })
 
         it('Should not mint if no value sent', async function () {
             let err = null
             try {
-                await nftContract.awardItem(1, { value: 0 })
+                await nftContract.publicSale(1, { value: 0 })
             } catch (error) {
                 err = error
             }
@@ -140,7 +241,7 @@ describe('TokenproofFoundersCircleNFT', function () {
             const NUM = 2
             let err = null
             try {
-                await nftContract.awardItem(NUM, { value: Web3Utils.toWei(NUM * MINT_PRICE, 'ether') })
+                await nftContract.publicSale(NUM, { value: Web3Utils.toWei(NUM * MINT_PRICE, 'ether') })
             } catch (error) {
                 err = error
             }
@@ -149,14 +250,14 @@ describe('TokenproofFoundersCircleNFT', function () {
 
         it('Should not be able to mint two in sequence for same wallet', async function () {
             // should succeed
-            await nftContract.awardItem(1, {
+            await nftContract.publicSale(1, {
             value: Web3Utils.toWei(MINT_PRICE, 'ether'),
             })
 
             // should fail because already minted from that wallet
             let err = null
             try {
-                await nftContract.awardItem(1, {
+                await nftContract.publicSale(1, {
                 value: Web3Utils.toWei(MINT_PRICE, 'ether'),
                 })
             } catch (error) {

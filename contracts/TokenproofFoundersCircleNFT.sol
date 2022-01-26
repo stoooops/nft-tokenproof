@@ -7,7 +7,7 @@ import '@openzeppelin/contracts/access/Ownable.sol';
 
 // Supply: 20000
 // All 20,000 are priced at 0.095 ETH
-// Paid allowlist
+// Paid allowlist (TODO)
 // Free allowlist
 // 1 txn/wallet
 contract TokenproofFoundersCircleNFT is ERC721Enumerable, Ownable {
@@ -23,10 +23,13 @@ contract TokenproofFoundersCircleNFT is ERC721Enumerable, Ownable {
     // mint paused/unpaused
     bool public _paused = false;
 
-    // free allowlist
-    mapping(address => bool) private _allowListClaimed;
-    bytes32 public merkleRoot = 0xf30e4a50fdbcd35d0b8c94e8bc5d5f29935c886a129dc6126d0acaff7d6c64b3;
+    // allowlist for freeSale
+    mapping(address => bool) private _allowListFreeSaleClaimed;
+    bytes32 public merkleRootFreeSale = 0xf30e4a50fdbcd35d0b8c94e8bc5d5f29935c886a129dc6126d0acaff7d6c64b3;
 
+    // allowlist for preSale
+    mapping(address => bool) private _allowListPreSaleClaimed;
+    bytes32 public merkleRootPreSale = 0xf30e4a50fdbcd35d0b8c94e8bc5d5f29935c886a129dc6126d0acaff7d6c64b3;
 
     constructor(string memory baseURI) ERC721("tokenproof Founder's Circle", "TPROOFC")  {
         setBaseURI(baseURI);
@@ -62,23 +65,35 @@ contract TokenproofFoundersCircleNFT is ERC721Enumerable, Ownable {
         _paused = val;
     }
 
-    function presale(bytes32[] calldata _merkleProof) external payable {
+    function _merkleMint(bytes32[] calldata _merkleProof, mapping(address => bool) storage _claimed, bytes32 _merkleRoot) private {
         // ensure unclaimed
-        require(!_allowListClaimed[msg.sender], "Address has already claimed");
+        require(!_claimed[msg.sender], "Address has already claimed");
 
         // verify the provided merkle proof, given to us through the API call on our website
         bytes32 leaf = keccak256(abi.encodePacked(msg.sender));
-        require(MerkleProof.verify(_merkleProof, merkleRoot, leaf), "Invalid proof.");
+        require(MerkleProof.verify(_merkleProof, _merkleRoot, leaf), "Invalid proof.");
 
         // mark claimed
-        _allowListClaimed[msg.sender] = true;
+        _claimed[msg.sender] = true;
 
         // Mint
         require( totalSupply() < 20000, "Exceeds maximum NFT supply" );
         _safeMint(msg.sender, totalSupply() + 1);
+
     }
 
-    function awardItem(uint256 num) public payable {
+    function freeSale(bytes32[] calldata _merkleProof) external payable {
+        _merkleMint(_merkleProof, _allowListFreeSaleClaimed, merkleRootFreeSale);
+    }
+
+    function preSale(bytes32[] calldata _merkleProof) external payable {
+        // correct price
+        require( msg.value >= _price,   "Ether sent is not correct" );
+
+        _merkleMint(_merkleProof, _allowListPreSaleClaimed, merkleRootPreSale);
+    }
+
+    function publicSale(uint256 num) public payable {
         require( !_paused,                    "Sale paused" );
         // one per wallet
         require(balanceOf(msg.sender) == 0, 'Each address may only own one NFT');
