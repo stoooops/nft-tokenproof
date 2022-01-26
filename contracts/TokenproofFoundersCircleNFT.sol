@@ -25,7 +25,7 @@ contract TokenproofFoundersCircleNFT is ERC721Enumerable, Ownable {
 
     // free allowlist
     mapping(address => bool) private _allowListClaimed;
-    bytes32 public merkleRoot = 0x7e971219fbad5c456c9c4c8460a1d4010c3a2a1766a7a516cb0192787711dcc2;
+    bytes32 public merkleRoot = 0xf30e4a50fdbcd35d0b8c94e8bc5d5f29935c886a129dc6126d0acaff7d6c64b3;
 
 
     constructor(string memory baseURI) ERC721("tokenproof Founder's Circle", "TPROOFC")  {

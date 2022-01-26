@@ -1,14 +1,12 @@
 const { MerkleTree } = require("merkletreejs");
 const keccak256 = require('keccak256')
 
-// function hashToken(account) {
-//     return Buffer.from(ethers.utils.solidityKeccak256(
-//         ['address'],
-//         [account],
-//     ).slice(1), 'hex');
-// }
-
 const allowListAddresses = [
+    // 2-4 from default provider mneumonic
+    "0x70997970C51812dc3A010C7d01b50e0d17dc79C8",
+    "0x3C44CdDdB6a900fa2b585dd299e03d12FA4293BC",
+    "0x90F79bf6EB2c4f870365E785982E1f101E93b906",
+    // tokenproof testnet accounts
     "0x6F836d79dB63044BBD34BeA6E7E9E6004987A75E",
     "0x30145D714Db337606c8f520bee9a3e3eAC910636",
     "0x2311C8A1C7A31694AdfF5E53A3dD5cd922d806Cb"
