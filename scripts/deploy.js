@@ -13,9 +13,12 @@ async function main() {
   // manually to make sure everything is compiled
   // await hre.run('compile');
 
+  const signer = await hre.ethers.getSigner()
+  console.log(`Deployer: ${signer.address}`)
+
   // We get the contract to deploy
-  const ColoredNumbers = await hre.ethers.getContractFactory('TokenproofFoundersCircleNFT')
-  const token = await ColoredNumbers.deploy('ipfs://QmQvcDYz5CVMdt2EeYyGAQJeZ83iWACpPqEEVo2Tb3STjK')
+  const TokenproofFoundersCircleNFT = await hre.ethers.getContractFactory('TokenproofFoundersCircleNFT')
+  const token = await TokenproofFoundersCircleNFT.deploy('ipfs://QmQvcDYz5CVMdt2EeYyGAQJeZ83iWACpPqEEVo2Tb3STjK')
 
   await token.deployed()
 
