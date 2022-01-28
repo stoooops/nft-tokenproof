@@ -81,8 +81,8 @@ contract TokenproofFoundersCircleNFT is ERC721Enumerable, Ownable {
 
     function _merkleMint(bytes32[] calldata _merkleProof, mapping(address => bool) storage _claimed, bytes32 _merkleRoot) private {
         // ensure unclaimed
-        require(!_claimed[msg.sender], "Address has already claimed");
-        require(balanceOf(msg.sender) == 0,    "Cannot mint if already own NFT");
+        require(!_claimed[msg.sender], "Address has already minted");
+        require(balanceOf(msg.sender) == 0, "Cannot mint if already own NFT");
 
         // verify the provided merkle proof, given to us through the API call on our website
         bytes32 leaf = keccak256(abi.encodePacked(msg.sender));
