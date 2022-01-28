@@ -4,7 +4,10 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "lint": "npm run lint:js && npm run lint:sol",
+    "lint:js": "eslint --ignore-path .gitignore . --fix",
+    "lint:sol": "prettier --write \"contracts/**/*.sol\""
   },
   "keywords": [],
   "author": "",
@@ -16,11 +19,13 @@
     "@openzeppelin/contracts": "^4.4.1",
     "chai": "^4.3.4",
     "chai-as-promised": "^7.1.1",
+    "eslint": "^8.7.0",
     "ethereum-waffle": "^3.4.0",
     "ethers": "^5.5.3",
     "hardhat": "^2.8.2",
     "keccak256": "^1.0.6",
     "merkletreejs": "^0.2.27",
+    "prettier": "^2.5.1",
     "web3-utils": "^1.7.0"
   }
 }
