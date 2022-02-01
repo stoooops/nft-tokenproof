@@ -9,7 +9,8 @@ const allowListAddresses = [
     // tokenproof testnet accounts
     "0x6F836d79dB63044BBD34BeA6E7E9E6004987A75E",
     "0x30145D714Db337606c8f520bee9a3e3eAC910636",
-    "0x2311C8A1C7A31694AdfF5E53A3dD5cd922d806Cb"
+    "0x2311C8A1C7A31694AdfF5E53A3dD5cd922d806Cb",
+    "0xd1968902b1A702F8cF4dcd7df1DfADE2BD5ADB67"
 ]
 
 // leaves, merkleTree, and rootHash are all determined prior to claim.
