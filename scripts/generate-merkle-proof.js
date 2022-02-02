@@ -32,6 +32,7 @@ console.log(`Root Hash: ${merkleTree.getRoot()}\n`);
 // WEBSITE
 //////////////////////////////////////////////////////////////////////////
 
+
 const claimAddress = "0xd1968902b1A702F8cF4dcd7df1DfADE2BD5ADB67";
 console.log(`claimAddress: ${claimAddress}`)
 const index = allowListAddresses.indexOf(claimAddress);
@@ -39,12 +40,13 @@ if (index < 0) {
     throw Error(`Unknown claim address: ${claimAddress}`)
 }
 
-const claimAddressMerkleTreeLeafNode = keccak256(claimAddress);
-const hexProof = merkleTree.getHexProof(claimAddressMerkleTreeLeafNode);
+const keccakClaimAddress = keccak256(claimAddress);
+const hexProof = merkleTree.getHexProof(keccakClaimAddress);
 
 console.log(hexProof)
 console.log()
 console.log(`Claim Address:  ${claimAddress}`)
-console.log(`keccak256 leaf: ${claimAddressMerkleTreeLeafNode}`)
+console.log(`keccak256 leaf: ${keccakClaimAddress.toString('hex')}`)
 console.log(`Merkle Proof:   ${hexProof}`)
+
 
