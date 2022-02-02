@@ -28,15 +28,23 @@ console.log(`Allowlist Merkle Tree\n${merkleTree}\n`);
 console.log(`Root Hash: ${merkleTree.getRoot()}\n`);
 
 
-
 //////////////////////////////////////////////////////////////////////////
 // WEBSITE
 //////////////////////////////////////////////////////////////////////////
 
-const claimingAddress = leafNodes[2];
-const hexProof = merkleTree.getHexProof(claimingAddress);
+const claimAddress = "0xd1968902b1A702F8cF4dcd7df1DfADE2BD5ADB67";
+console.log(`claimAddress: ${claimAddress}`)
+const index = allowListAddresses.indexOf(claimAddress);
+if (index < 0) {
+    throw Error(`Unknown claim address: ${claimAddress}`)
+}
 
-console.log(`Merkle Proof for Address ${claimingAddress}\n${hexProof}`)
+const claimAddressMerkleTreeLeafNode = keccak256(claimAddress);
+const hexProof = merkleTree.getHexProof(claimAddressMerkleTreeLeafNode);
+
 console.log(hexProof)
-// const proof = merkleTree.getHexProof(hashToken(Object.entries(tokens)));
-// console.log(`proof: ${proof}`);
+console.log()
+console.log(`Claim Address:  ${claimAddress}`)
+console.log(`keccak256 leaf: ${claimAddressMerkleTreeLeafNode}`)
+console.log(`Merkle Proof:   ${hexProof}`)
+
