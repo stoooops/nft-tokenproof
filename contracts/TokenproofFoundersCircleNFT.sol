@@ -43,6 +43,7 @@ contract TokenproofFoundersCircleNFT is ERC721A, Ownable {
     // ERC721Metadata
     ////////////////////////////////////////////////////////////////////////////////////
 
+    // TODO /0 /1 /2
     function tokenURI(uint256 tokenId) public view virtual override returns (string memory) {
         require(_exists(tokenId), "ERC721Metadata: URI query for nonexistent token");
 
@@ -59,6 +60,14 @@ contract TokenproofFoundersCircleNFT is ERC721A, Ownable {
 
     function setBaseURI(string memory baseURI) public onlyOwner {
         _baseTokenURI = baseURI;
+    }
+
+    ////////////////////////////////////////////////////////////////////////////////////
+    // Price updates if needed
+    ////////////////////////////////////////////////////////////////////////////////////
+
+    function setPrice(uint256 newPrice) public onlyOwner {
+        _price = newPrice;
     }
 
     ////////////////////////////////////////////////////////////////////////////////////
