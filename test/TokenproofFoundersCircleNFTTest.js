@@ -18,6 +18,7 @@ const ERROR_MSG_INVALID_PROOF = 'Invalid proof';
 const ERROR_MSG_PUBLIC_SALE_NOT_ACTIVE = 'Public sale not active';
 const ERROR_MSG_PRE_SALE_NOT_ACTIVE = 'Pre sale not active';
 const ERROR_MSG_FREE_CLAIM_NOT_ACTIVE = 'Free claim not active';
+const ERROR_MSG_CALLER_IS_NOT_THE_OWNER = 'Ownable: caller is not the owner';
 
 describe('TokenproofFoundersCircleNFT', function () {
   let owner, allowlist1, allowlist2, allowlist3, other;
@@ -302,6 +303,9 @@ describe('TokenproofFoundersCircleNFT', function () {
 
         // update price
         const newPrice = Web3Utils.toWei((10 * parseInt(MINT_PRICE)).toString(), 'ether')
+        // cannot change from non-owner address
+        await expect(nftContract.connect(allowlist1).setPrice(newPrice)).to.be.revertedWith(ERROR_MSG_CALLER_IS_NOT_THE_OWNER);
+        // can change from owner address
         await nftContract.setPrice(newPrice);
 
         // now buy again from new addr
