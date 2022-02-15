@@ -28,7 +28,10 @@ contract TokenproofFoundersCircleNFT is ERC721A, Ownable, ReentrancyGuard {
     bool public _isPublicSaleActive = false;
 
     // track who has minted and allow 1 mint per address
-    mapping(address => bool) private _mintedAddresses;
+    mapping(address => uint256) private _numMintedByAddress;
+
+    // track who called free claim already to disallow repeated calls
+    mapping(address => bool) private _hasFreeClaimed;
 
     // allowlist for freeClaim
     bytes32 public merkleRootFreeClaim = 0x95758bb7678be816e57e10f33116431676b9263618ea7f42b2e45f3b23f3bb55;
@@ -36,7 +39,7 @@ contract TokenproofFoundersCircleNFT is ERC721A, Ownable, ReentrancyGuard {
     // allowlist for preSale
     bytes32 public merkleRootPreSale = 0x95758bb7678be816e57e10f33116431676b9263618ea7f42b2e45f3b23f3bb55;
 
-    constructor(string memory baseURI) ERC721A("tokenproof Founders Circle", "TKPFC", 1, 20000)  {
+    constructor(string memory baseURI) ERC721A("tokenproof Founders Circle", "TKPFC", 5, 20000)  {
         setBaseURI(baseURI);
     }
 
@@ -99,48 +102,53 @@ contract TokenproofFoundersCircleNFT is ERC721A, Ownable, ReentrancyGuard {
         _isPublicSaleActive = val;
     }
 
-    function _merkleMint(bytes32[] calldata _merkleProof, mapping(address => bool) storage _claimed, bytes32 _merkleRoot) private {
-        // ensure unclaimed
-        require(!_claimed[msg.sender], "Address has already minted");
-        require(balanceOf(msg.sender) == 0, "Cannot mint if already own NFT");
+    function _recordAndValidateMintNum(uint256 _num) private {
+        require(_num < 6, "Cannot mint more than 5");
+        unchecked {
+            _numMintedByAddress[msg.sender] += _num;
+        }
+        require(_numMintedByAddress[msg.sender] < 6, "Address has minted too many");
+    }
 
+    function _merkleMint(uint256 _num, bytes32[] calldata _merkleProof, bytes32 _merkleRoot) private {
         // verify the provided merkle proof, given to us through the API call on our website
         bytes32 leaf = keccak256(abi.encodePacked(msg.sender));
         require(MerkleProof.verify(_merkleProof, _merkleRoot, leaf), "Invalid proof.");
 
         // mark claimed
-        _claimed[msg.sender] = true;
+        _recordAndValidateMintNum(_num);
+
         // Mint
-        _safeMint(msg.sender, 1);
+        _safeMint(msg.sender, _num);
     }
 
     function freeClaim(bytes32[] calldata _merkleProof) external payable nonReentrant {
         require( _isFreeClaimActive,  "Free claim not active" );
-        _merkleMint(_merkleProof, _mintedAddresses, merkleRootFreeClaim);
+
+        require(!_hasFreeClaimed[msg.sender], "Address has already free claimed");
+        _hasFreeClaimed[msg.sender] = true;
+
+        _merkleMint(1, _merkleProof, merkleRootFreeClaim);
     }
 
-    function preSale(bytes32[] calldata _merkleProof) external payable nonReentrant {
+    function preSale(uint256 _num, bytes32[] calldata _merkleProof) external payable nonReentrant {
         require( _isPreSaleActive,  "Pre sale not active" );
         // correct price
-        require( msg.value >= _price,   "Ether sent is not correct" );
+        require( msg.value == _num * _price,   "Ether sent is not correct" );
 
-        _merkleMint(_merkleProof, _mintedAddresses, merkleRootPreSale);
+        _merkleMint(_num, _merkleProof, merkleRootPreSale);
     }
 
-    function publicSale() public payable nonReentrant {
+    function publicSale(uint256 _num) public payable nonReentrant {
         require( _isPublicSaleActive,  "Public sale not active" );
-        // ensure unclaimed
-        require(!_mintedAddresses[msg.sender], "Address has already minted");
-        // one per wallet to avoid funkiness
-        require(balanceOf(msg.sender) == 0, "Cannot mint if already own NFT");
         // correct price
-        require( msg.value == _price, "Ether sent is not correct" );
+        require( msg.value == _num * _price, "Ether sent is not correct" );
 
         // mark claimed
-        _mintedAddresses[msg.sender] = true;
+        _recordAndValidateMintNum(_num);
 
         // #1 - 20000
-        _safeMint( msg.sender, 1 );
+        _safeMint(msg.sender, _num);
     }
 
     ////////////////////////////////////////////////////////////////////////////////////
