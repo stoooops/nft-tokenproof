@@ -10,7 +10,9 @@ const allowListAddresses = [
     "0x6F836d79dB63044BBD34BeA6E7E9E6004987A75E",
     "0x30145D714Db337606c8f520bee9a3e3eAC910636",
     "0x2311C8A1C7A31694AdfF5E53A3dD5cd922d806Cb",
-    "0xd1968902b1A702F8cF4dcd7df1DfADE2BD5ADB67"
+    "0xd1968902b1A702F8cF4dcd7df1DfADE2BD5ADB67",
+    "0x5652140Ad99f6Fc9241d122Cc376E4Af2Ac4242f"
+    //"0x11105898600b41d79348A4C8Ef6eF2516d06c924"
 ]
 
 // leaves, merkleTree, and rootHash are all determined prior to claim.
@@ -25,7 +27,7 @@ const merkleTree = new MerkleTree(leafNodes, keccak256, { sortPairs: true });
 console.log(`Allowlist Merkle Tree\n${merkleTree}\n`);
 
 // root hash
-console.log(`Root Hash: ${merkleTree.getRoot()}\n`);
+console.log(`Root Hash: ${merkleTree.getRoot().toString('hex')}\n`);
 
 
 //////////////////////////////////////////////////////////////////////////
@@ -33,7 +35,7 @@ console.log(`Root Hash: ${merkleTree.getRoot()}\n`);
 //////////////////////////////////////////////////////////////////////////
 
 
-const claimAddress = "0xd1968902b1A702F8cF4dcd7df1DfADE2BD5ADB67";
+const claimAddress = "0x5652140Ad99f6Fc9241d122Cc376E4Af2Ac4242f";
 console.log(`claimAddress: ${claimAddress}`)
 const index = allowListAddresses.indexOf(claimAddress);
 if (index < 0) {
