@@ -3,7 +3,7 @@
 //
 // When running the script with `npx hardhat run <script>` you'll find the Hardhat
 // Runtime Environment's members available in the global scope.
-const hre = require('hardhat')
+const hre = require('hardhat');
 
 async function main() {
   // Hardhat always runs the compile task when running scripts with its command
@@ -13,16 +13,16 @@ async function main() {
   // manually to make sure everything is compiled
   // await hre.run('compile');
 
-  const signer = await hre.ethers.getSigner()
-  console.log(`Deployer: ${signer.address}`)
+  const signer = await hre.ethers.getSigner();
+  console.log(`Deployer: ${signer.address}`);
 
   // We get the contract to deploy
-  const TokenproofFoundersCircleNFT = await hre.ethers.getContractFactory('TokenproofFoundersCircleNFT')
-  const token = await TokenproofFoundersCircleNFT.deploy('ipfs://QmQvcDYz5CVMdt2EeYyGAQJeZ83iWACpPqEEVo2Tb3STjK')
+  const TokenproofFoundersCircleNFT = await hre.ethers.getContractFactory('TokenproofFoundersCircleNFT');
+  const token = await TokenproofFoundersCircleNFT.deploy('ipfs://QmQvcDYz5CVMdt2EeYyGAQJeZ83iWACpPqEEVo2Tb3STjK');
 
-  await token.deployed()
+  await token.deployed();
 
-  console.log('TokenproofFoundersCircleNFT deployed to:', token.address)
+  console.log('TokenproofFoundersCircleNFT deployed to:', token.address);
 }
 
 // We recommend this pattern to be able to use async/await everywhere
@@ -30,6 +30,6 @@ async function main() {
 main()
   .then(() => process.exit(0))
   .catch((error) => {
-    console.error(error)
-    process.exit(1)
-  })
+    console.error(error);
+    process.exit(1);
+  });
