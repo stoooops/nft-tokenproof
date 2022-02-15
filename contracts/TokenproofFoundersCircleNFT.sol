@@ -22,6 +22,7 @@ contract TokenproofFoundersCircleNFT is ERC721Enumerable, Ownable {
     uint256 private _price = 0.0001 ether;
 
     // mint paused/unpaused
+    bool public _isFreeClaimActive = false;
     bool public _isPreSaleActive = false;
     bool public _isPublicSaleActive = false;
 
@@ -76,6 +77,10 @@ contract TokenproofFoundersCircleNFT is ERC721Enumerable, Ownable {
     // Mint Function
     ////////////////////////////////////////////////////////////////////////////////////
 
+    function setIsFreeClaimActive(bool val) public onlyOwner {
+        _isFreeClaimActive = val;
+    }
+
     function setIsPreSaleActive(bool val) public onlyOwner {
         _isPreSaleActive = val;
     }
@@ -105,6 +110,7 @@ contract TokenproofFoundersCircleNFT is ERC721Enumerable, Ownable {
     }
 
     function freeClaim(bytes32[] calldata _merkleProof) external payable {
+        require( _isFreeClaimActive,  "Free claim not active" );
         _merkleMint(_merkleProof, _mintedAddresses, merkleRootFreeClaim);
     }
 

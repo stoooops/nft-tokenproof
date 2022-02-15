@@ -18,6 +18,7 @@ const ERROR_MSG_ALREADY_OWNED = "Cannot mint if already own NFT"
 const ERROR_MSG_INVALID_PROOF = "Invalid proof"
 const ERROR_MSG_PUBLIC_SALE_NOT_ACTIVE = "Public sale not active"
 const ERROR_MSG_PRE_SALE_NOT_ACTIVE = "Pre sale not active"
+const ERROR_MSG_FREE_CLAIM_NOT_ACTIVE = "Free claim not active"
 
 describe('TokenproofFoundersCircleNFT', function () {
   let owner, allowlist1, allowlist2, allowlist3, other
@@ -55,6 +56,21 @@ describe('TokenproofFoundersCircleNFT', function () {
   describe("Mint", function () {
 
     describe("freeClaim", function () {
+
+        beforeEach(async function () {
+            await nftContract.setIsFreeClaimActive(true)
+        })
+
+        it('Should be able to pause/unpause free claim', async function () {
+            const merkleProof = merkleTree.getHexProof(keccak256(allowlist1.address));
+            // pause
+            await nftContract.setIsFreeClaimActive(false)
+            await expect(nftContract.connect(allowlist1).freeClaim(merkleProof)).to.be.revertedWith(ERROR_MSG_FREE_CLAIM_NOT_ACTIVE)
+
+            // unpause
+            await nftContract.setIsFreeClaimActive(true)
+            await nftContract.connect(allowlist1).freeClaim(merkleProof)
+        })
 
         it('Should be able to allowlist mint NFT #1', async function () {
             const merkleProof = merkleTree.getHexProof(keccak256(allowlist1.address));
