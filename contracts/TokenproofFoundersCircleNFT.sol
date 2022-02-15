@@ -22,6 +22,7 @@ contract TokenproofFoundersCircleNFT is ERC721Enumerable, Ownable {
     uint256 private _price = 0.0001 ether;
 
     // mint paused/unpaused
+    bool public _isPreSaleActive = false;
     bool public _isPublicSaleActive = false;
 
     // track who has minted and allow 1 mint per address
@@ -75,6 +76,10 @@ contract TokenproofFoundersCircleNFT is ERC721Enumerable, Ownable {
     // Mint Function
     ////////////////////////////////////////////////////////////////////////////////////
 
+    function setIsPreSaleActive(bool val) public onlyOwner {
+        _isPreSaleActive = val;
+    }
+
     function setIsPublicSaleActive(bool val) public onlyOwner {
         _isPublicSaleActive = val;
     }
@@ -104,6 +109,7 @@ contract TokenproofFoundersCircleNFT is ERC721Enumerable, Ownable {
     }
 
     function preSale(bytes32[] calldata _merkleProof) external payable {
+        require( _isPreSaleActive,  "Pre sale not active" );
         // correct price
         require( msg.value >= _price,   "Ether sent is not correct" );
 

@@ -16,6 +16,8 @@ const ERROR_MSG_WRONG_ETHER = "Ether sent is not correct"
 const ERROR_MSG_ALREADY_MINTED = "Address has already minted"
 const ERROR_MSG_ALREADY_OWNED = "Cannot mint if already own NFT"
 const ERROR_MSG_INVALID_PROOF = "Invalid proof"
+const ERROR_MSG_PUBLIC_SALE_NOT_ACTIVE = "Public sale not active"
+const ERROR_MSG_PRE_SALE_NOT_ACTIVE = "Pre sale not active"
 
 describe('TokenproofFoundersCircleNFT', function () {
   let owner, allowlist1, allowlist2, allowlist3, other
@@ -91,9 +93,7 @@ describe('TokenproofFoundersCircleNFT', function () {
         it('Should not be able to mint, transfer, mint received wallet', async function () {
             // should succeed
             const merkleProof = merkleTree.getHexProof(keccak256(allowlist1.address));
-            await nftContract.connect(allowlist1).preSale(merkleProof, {
-                value: Web3Utils.toWei(MINT_PRICE, 'ether'),
-            })
+            await nftContract.connect(allowlist1).freeClaim(merkleProof)
             await nftContract.connect(allowlist1).transferFrom(allowlist1.address, owner.address, 1)
 
             await nftContract.setIsPublicSaleActive(true)
@@ -114,6 +114,25 @@ describe('TokenproofFoundersCircleNFT', function () {
     });
 
     describe("preSale", function () {
+
+        beforeEach(async function () {
+            await nftContract.setIsPreSaleActive(true)
+        })
+
+        it('Should be able to pause/unpause pre sale', async function () {
+            const merkleProof = merkleTree.getHexProof(keccak256(allowlist1.address));
+            // pause
+            await nftContract.setIsPreSaleActive(false)
+            await expect(nftContract.connect(allowlist1).preSale(merkleProof, {
+                value: Web3Utils.toWei(MINT_PRICE, 'ether'),
+            })).to.be.revertedWith(ERROR_MSG_PRE_SALE_NOT_ACTIVE)
+
+            // unpause
+            await nftContract.setIsPreSaleActive(true)
+            await nftContract.connect(allowlist1).preSale(merkleProof, {
+                value: Web3Utils.toWei(MINT_PRICE, 'ether'),
+            })
+        })
 
         it('Should be able to allowlist mint NFT #1', async function () {
             const merkleProof = merkleTree.getHexProof(keccak256(allowlist1.address));
@@ -206,6 +225,19 @@ describe('TokenproofFoundersCircleNFT', function () {
           await nftContract.setIsPublicSaleActive(true)
         })
 
+        it('Should be able to pause/unpause public sale', async function () {
+            // pause
+            await nftContract.setIsPublicSaleActive(false)
+            await expect(nftContract.publicSale({
+                value: Web3Utils.toWei(MINT_PRICE, 'ether'),
+            })).to.be.revertedWith(ERROR_MSG_PUBLIC_SALE_NOT_ACTIVE)
+            // unpause
+            await nftContract.setIsPublicSaleActive(true)
+            await nftContract.publicSale({
+                value: Web3Utils.toWei(MINT_PRICE, 'ether'),
+            })
+        })
+
         it('Should be able to pay to mint NFT #1', async function () {
             await nftContract.publicSale({
                 value: Web3Utils.toWei(MINT_PRICE, 'ether'),
@@ -254,6 +286,8 @@ describe('TokenproofFoundersCircleNFT', function () {
 
         // TODO check if desired
         it('Should be not be able to mint if completed preSale', async function () {
+            await nftContract.setIsPreSaleActive(true)
+
             const merkleProof = merkleTree.getHexProof(keccak256(allowlist1.address));
             await nftContract.connect(allowlist1).preSale(merkleProof, {
                 value: Web3Utils.toWei(MINT_PRICE, 'ether'),
