@@ -65,10 +65,6 @@ describe('TokenproofFoundersCircleNFT', function () {
         it('Should be able to allowlist mint NFT #1, #2, #3', async function () {
             for (const addr of [allowlist1, allowlist2, allowlist3]) {
                 const merkleProof = merkleTree.getHexProof(keccak256(addr.address));
-                console.log("-------------------")
-                console.log(addr.address)
-                console.log(merkleProof)
-                console.log("-------------------")
                 await nftContract.connect(addr).freeClaim(merkleProof)
             }
 
@@ -100,6 +96,7 @@ describe('TokenproofFoundersCircleNFT', function () {
             })
             await nftContract.connect(allowlist1).transferFrom(allowlist1.address, owner.address, 1)
 
+            await nftContract.setIsPublicSaleActive(true)
             // should fail because already in that wallet
             await expect(nftContract.publicSale({
                     value: Web3Utils.toWei(MINT_PRICE, 'ether'),
@@ -166,6 +163,7 @@ describe('TokenproofFoundersCircleNFT', function () {
             await nftContract.connect(allowlist1).transferFrom(allowlist1.address, owner.address, 1)
 
             // should fail because already minted from that wallet
+            await nftContract.setIsPublicSaleActive(true)
             await expect(nftContract.connect(allowlist1).publicSale({
                 value: Web3Utils.toWei(MINT_PRICE, 'ether'),
             })).to.be.revertedWith(ERROR_MSG_ALREADY_MINTED)
@@ -180,9 +178,10 @@ describe('TokenproofFoundersCircleNFT', function () {
             await nftContract.connect(allowlist1).transferFrom(allowlist1.address, owner.address, 1)
 
             // should fail because already in that wallet
-                await expect(nftContract.publicSale({
-                    value: Web3Utils.toWei(MINT_PRICE, 'ether'),
-                })).to.be.revertedWith(ERROR_MSG_ALREADY_OWNED)
+            await nftContract.setIsPublicSaleActive(true)
+            await expect(nftContract.publicSale({
+                value: Web3Utils.toWei(MINT_PRICE, 'ether'),
+            })).to.be.revertedWith(ERROR_MSG_ALREADY_OWNED)
         })
 
         it('Should not be able to use wrong MerkleProof', async function () {
@@ -202,6 +201,10 @@ describe('TokenproofFoundersCircleNFT', function () {
     });
 
     describe("publicSale", function () {
+
+        beforeEach(async function () {
+          await nftContract.setIsPublicSaleActive(true)
+        })
 
         it('Should be able to pay to mint NFT #1', async function () {
             await nftContract.publicSale({

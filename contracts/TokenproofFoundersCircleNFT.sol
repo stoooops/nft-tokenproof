@@ -22,7 +22,7 @@ contract TokenproofFoundersCircleNFT is ERC721Enumerable, Ownable {
     uint256 private _price = 0.0001 ether;
 
     // mint paused/unpaused
-    bool public _paused = false;
+    bool public _isPublicSaleActive = false;
 
     // track who has minted and allow 1 mint per address
     mapping(address => bool) private _mintedAddresses;
@@ -75,8 +75,8 @@ contract TokenproofFoundersCircleNFT is ERC721Enumerable, Ownable {
     // Mint Function
     ////////////////////////////////////////////////////////////////////////////////////
 
-    function pause(bool val) public onlyOwner {
-        _paused = val;
+    function setIsPublicSaleActive(bool val) public onlyOwner {
+        _isPublicSaleActive = val;
     }
 
     function _merkleMint(bytes32[] calldata _merkleProof, mapping(address => bool) storage _claimed, bytes32 _merkleRoot) private {
@@ -111,16 +111,16 @@ contract TokenproofFoundersCircleNFT is ERC721Enumerable, Ownable {
     }
 
     function publicSale() public payable {
-        require( !_paused,                     "Sale paused" );
+        require( _isPublicSaleActive,  "Public sale not active" );
         // ensure unclaimed
         require(!_mintedAddresses[msg.sender], "Address has already minted");
         // one per wallet to avoid funkiness
-        require(balanceOf(msg.sender) == 0,    "Cannot mint if already own NFT");
+        require(balanceOf(msg.sender) == 0, "Cannot mint if already own NFT");
         // correct price
-        require( msg.value == _price,          "Ether sent is not correct" );
+        require( msg.value == _price, "Ether sent is not correct" );
         // still available to mint
         uint256 supply = totalSupply();
-        require( supply < 20000,               "Exceeds maximum NFT supply" );
+        require( supply < 20000, "Exceeds maximum NFT supply" );
 
         // mark claimed
         _mintedAddresses[msg.sender] = true;
