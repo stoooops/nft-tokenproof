@@ -2,7 +2,7 @@
 pragma solidity ^0.8.4;
 
 import '@openzeppelin/contracts/utils/cryptography/MerkleProof.sol';
-import '@openzeppelin/contracts/token/ERC721/extensions/ERC721Enumerable.sol';
+import "./lib/ERC721A.sol";
 import '@openzeppelin/contracts/access/Ownable.sol';
 
 // Supply: 20000
@@ -10,7 +10,7 @@ import '@openzeppelin/contracts/access/Ownable.sol';
 // Paid allowlist
 // Free allowlist
 // 1 txn/wallet
-contract TokenproofFoundersCircleNFT is ERC721Enumerable, Ownable {
+contract TokenproofFoundersCircleNFT is ERC721A, Ownable {
 
     using Strings for uint256;
 
@@ -35,7 +35,7 @@ contract TokenproofFoundersCircleNFT is ERC721Enumerable, Ownable {
     // allowlist for preSale
     bytes32 public merkleRootPreSale = 0x95758bb7678be816e57e10f33116431676b9263618ea7f42b2e45f3b23f3bb55;
 
-    constructor(string memory baseURI) ERC721("tokenproof Founders Circle", "TKPFC")  {
+    constructor(string memory baseURI) ERC721A("tokenproof Founders Circle", "TKPFC", 1, 20000)  {
         setBaseURI(baseURI);
     }
 
@@ -98,15 +98,10 @@ contract TokenproofFoundersCircleNFT is ERC721Enumerable, Ownable {
         bytes32 leaf = keccak256(abi.encodePacked(msg.sender));
         require(MerkleProof.verify(_merkleProof, _merkleRoot, leaf), "Invalid proof.");
 
-        // check supply
-        uint256 supply = totalSupply();
-        require( supply < 20000, "Exceeds maximum NFT supply" );
-
         // mark claimed
         _claimed[msg.sender] = true;
         // Mint
-        _safeMint(msg.sender, supply + 1);
-
+        _safeMint(msg.sender, 1);
     }
 
     function freeClaim(bytes32[] calldata _merkleProof) external payable {
@@ -130,15 +125,12 @@ contract TokenproofFoundersCircleNFT is ERC721Enumerable, Ownable {
         require(balanceOf(msg.sender) == 0, "Cannot mint if already own NFT");
         // correct price
         require( msg.value == _price, "Ether sent is not correct" );
-        // still available to mint
-        uint256 supply = totalSupply();
-        require( supply < 20000, "Exceeds maximum NFT supply" );
 
         // mark claimed
         _mintedAddresses[msg.sender] = true;
 
         // #1 - 20000
-        _safeMint( msg.sender, supply + 1 );
+        _safeMint( msg.sender, 1 );
     }
 
     ////////////////////////////////////////////////////////////////////////////////////
