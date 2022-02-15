@@ -1,16 +1,17 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.4;
 
+import '@openzeppelin/contracts/access/Ownable.sol';
+import "@openzeppelin/contracts/security/ReentrancyGuard.sol";
 import '@openzeppelin/contracts/utils/cryptography/MerkleProof.sol';
 import "./lib/ERC721A.sol";
-import '@openzeppelin/contracts/access/Ownable.sol';
 
 // Supply: 20000
 // All 20,000 are priced at 0.095 ETH
 // Paid allowlist
 // Free allowlist
 // 1 txn/wallet
-contract TokenproofFoundersCircleNFT is ERC721A, Ownable {
+contract TokenproofFoundersCircleNFT is ERC721A, Ownable, ReentrancyGuard {
 
     using Strings for uint256;
 
@@ -113,12 +114,12 @@ contract TokenproofFoundersCircleNFT is ERC721A, Ownable {
         _safeMint(msg.sender, 1);
     }
 
-    function freeClaim(bytes32[] calldata _merkleProof) external payable {
+    function freeClaim(bytes32[] calldata _merkleProof) external payable nonReentrant {
         require( _isFreeClaimActive,  "Free claim not active" );
         _merkleMint(_merkleProof, _mintedAddresses, merkleRootFreeClaim);
     }
 
-    function preSale(bytes32[] calldata _merkleProof) external payable {
+    function preSale(bytes32[] calldata _merkleProof) external payable nonReentrant {
         require( _isPreSaleActive,  "Pre sale not active" );
         // correct price
         require( msg.value >= _price,   "Ether sent is not correct" );
@@ -126,7 +127,7 @@ contract TokenproofFoundersCircleNFT is ERC721A, Ownable {
         _merkleMint(_merkleProof, _mintedAddresses, merkleRootPreSale);
     }
 
-    function publicSale() public payable {
+    function publicSale() public payable nonReentrant {
         require( _isPublicSaleActive,  "Public sale not active" );
         // ensure unclaimed
         require(!_mintedAddresses[msg.sender], "Address has already minted");
