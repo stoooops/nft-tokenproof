@@ -7,10 +7,10 @@ import '@openzeppelin/contracts/utils/cryptography/MerkleProof.sol';
 import "./lib/ERC721A.sol";
 
 // Supply: 20000
-// All 20,000 are priced at 0.095 ETH
+// All 20,000 are priced at 0.1 ETH
 // Paid allowlist
 // Free allowlist
-// 1 txn/wallet
+// Max 5 mint/wallet
 contract TokenproofFoundersCircleNFT is ERC721A, Ownable, ReentrancyGuard {
 
     using Strings for uint256;
@@ -19,8 +19,7 @@ contract TokenproofFoundersCircleNFT is ERC721A, Ownable, ReentrancyGuard {
     string _baseTokenURI;
 
     // Mint price
-    // TODO update price before deployment
-    uint256 private _price = 0.0001 ether;
+    uint256 private _price = 0.1 ether;
 
     // mint paused/unpaused
     bool public _isFreeClaimActive = false;

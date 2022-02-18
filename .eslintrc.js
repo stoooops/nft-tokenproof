@@ -12,11 +12,11 @@ module.exports = {
     ecmaVersion: 12,
   },
   rules: {
-    'node/no-unpublished-require': ["error", {
-            "allowModules": [],
-            "convertPath": null,
-            "tryExtensions": [".js", ".json", ".node"]
-        }],
+    //    'node/no-unpublished-require': ["error", {
+    //            "allowModules": [],
+    //            "convertPath": null,
+    //            "tryExtensions": [".js", ".json", ".node"]
+    //        }],
     'node/no-unsupported-features/es-syntax': ['error', { ignores: ['modules'] }],
   },
 };
