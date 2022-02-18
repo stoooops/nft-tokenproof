@@ -27,7 +27,7 @@ contract TokenproofFoundersCircleNFT is ERC721A, Ownable, ReentrancyGuard {
     bool public _isPublicSaleActive = false;
 
     // track who has minted and allow 1 mint per address
-    mapping(address => uint256) private _numMintedByAddress;
+    mapping(address => uint256) private _numPaidMintByAddress;
 
     // track who called free claim already to disallow repeated calls
     mapping(address => bool) private _hasFreeClaimed;
@@ -104,49 +104,58 @@ contract TokenproofFoundersCircleNFT is ERC721A, Ownable, ReentrancyGuard {
     function _recordAndValidateMintNum(uint256 _num) private {
         require(_num < 6, "Cannot mint more than 5");
         unchecked {
-            _numMintedByAddress[msg.sender] += _num;
+            _numPaidMintByAddress[msg.sender] += _num;
         }
-        require(_numMintedByAddress[msg.sender] < 6, "Address has minted too many");
+        require(_numPaidMintByAddress[msg.sender] < 6, "Address has minted too many");
     }
 
-    function _merkleMint(uint256 _num, bytes32[] calldata _merkleProof, bytes32 _merkleRoot) private {
+    function _verifyMerkleProof(bytes32[] calldata _merkleProof, bytes32 _merkleRoot) private view {
         // verify the provided merkle proof, given to us through the API call on our website
         bytes32 leaf = keccak256(abi.encodePacked(msg.sender));
         require(MerkleProof.verify(_merkleProof, _merkleRoot, leaf), "Invalid proof.");
-
-        // mark claimed
-        _recordAndValidateMintNum(_num);
-
-        // Mint
-        _safeMint(msg.sender, _num);
     }
 
     function freeClaim(bytes32[] calldata _merkleProof) external payable nonReentrant {
+        // ensure active preSale
         require( _isFreeClaimActive,  "Free claim not active" );
 
+        // ensure not already free claimed
         require(!_hasFreeClaimed[msg.sender], "Address has already free claimed");
         _hasFreeClaimed[msg.sender] = true;
 
-        _merkleMint(1, _merkleProof, merkleRootFreeClaim);
+        // ensure correct merkle proof
+        _verifyMerkleProof(_merkleProof, merkleRootFreeClaim);
+
+        // ERC721A mint
+        _safeMint(msg.sender, 1);
     }
 
     function preSale(uint256 _num, bytes32[] calldata _merkleProof) external payable nonReentrant {
+        // ensure active preSale
         require( _isPreSaleActive,  "Pre sale not active" );
-        // correct price
+        // ensure correct price
         require( msg.value == _num * _price,   "Ether sent is not correct" );
 
-        _merkleMint(_num, _merkleProof, merkleRootPreSale);
+        // ensure correct merkle proof
+        _verifyMerkleProof(_merkleProof, merkleRootPreSale);
+
+        // ensure safe number, and not too many minted
+        _recordAndValidateMintNum(_num);
+
+        // ERC721A mint
+        _safeMint(msg.sender, _num);
     }
 
     function publicSale(uint256 _num) public payable nonReentrant {
+        // ensure active publicSale
         require( _isPublicSaleActive,  "Public sale not active" );
-        // correct price
+        // ensure correct price
         require( msg.value == _num * _price, "Ether sent is not correct" );
 
-        // mark claimed
+        // ensure safe number, and not too many minted
         _recordAndValidateMintNum(_num);
 
-        // #1 - 20000
+        // ERC721A mint
         _safeMint(msg.sender, _num);
     }
 

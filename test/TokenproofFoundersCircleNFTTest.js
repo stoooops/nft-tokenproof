@@ -83,13 +83,56 @@ describe('TokenproofFoundersCircleNFT', function () {
         expect(await nftContract.tokenURI(0)).to.equal(TEST_URI);
       });
 
+      it('Should be able to allowlist freeClaim then purchase max', async function () {
+        const merkleProof = merkleTree.getHexProof(keccak256(allowlist1.address));
+        await nftContract.connect(allowlist1).freeClaim(merkleProof);
+
+        await nftContract.setIsPublicSaleActive(true);
+        await nftContract.connect(allowlist1).publicSale(MAX_MINT, {
+          value: MAX_MINT_PRICE_WEI,
+        });
+        // should fail because already minted max from that wallet
+        await expect(
+          nftContract.connect(allowlist1).publicSale(1, {
+            value: Web3Utils.toWei(MINT_PRICE, 'ether'),
+          })
+        ).to.be.revertedWith(ERROR_MSG_MINTED_TOO_MANY);
+
+        expect(await nftContract.totalSupply()).to.equal(MAX_MINT + 1);
+        for (let i = 0; i < MAX_MINT + 1; i++) {
+          expect(await nftContract.tokenURI(i)).to.equal(TEST_URI);
+        }
+      });
+
+      it('Should be able to purchase max then allowlist freeClaim', async function () {
+        await nftContract.setIsPublicSaleActive(true);
+        await nftContract.connect(allowlist1).publicSale(MAX_MINT, {
+          value: MAX_MINT_PRICE_WEI,
+        });
+        // should fail because already minted max from that wallet
+        await expect(
+          nftContract.connect(allowlist1).publicSale(1, {
+            value: Web3Utils.toWei(MINT_PRICE, 'ether'),
+          })
+        ).to.be.revertedWith(ERROR_MSG_MINTED_TOO_MANY);
+
+        const merkleProof = merkleTree.getHexProof(keccak256(allowlist1.address));
+        await nftContract.connect(allowlist1).freeClaim(merkleProof);
+
+        expect(await nftContract.totalSupply()).to.equal(MAX_MINT + 1);
+        for (let i = 0; i < MAX_MINT + 1; i++) {
+          expect(await nftContract.tokenURI(i)).to.equal(TEST_URI);
+        }
+      });
+
       it('Should be able to allowlist freeClaim NFT #0, #1, #2', async function () {
-        for (const addr of [allowlist1, allowlist2, allowlist3]) {
+        const allowlists = [allowlist1, allowlist2, allowlist3];
+        for (const addr of allowlists) {
           const merkleProof = merkleTree.getHexProof(keccak256(addr.address));
           await nftContract.connect(addr).freeClaim(merkleProof);
         }
 
-        expect(await nftContract.totalSupply()).to.equal(3);
+        expect(await nftContract.totalSupply()).to.equal(allowlists.length);
       });
 
       it('Should be able to allowlist freeClaim NFT #0 but not a second', async function () {

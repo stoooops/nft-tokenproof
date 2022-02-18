@@ -13,4 +13,4 @@ Twitter: https://twitter.com/tokenproof
 - paid whitelist @ 0.1 ETH
 - public mint    @ 0.1 ETH
 - max 1 free claim/account. No way to free claim from same address twice.
-- max 5 mints/account, including free claim.
+- max 5 mints/account, not including free claim.
