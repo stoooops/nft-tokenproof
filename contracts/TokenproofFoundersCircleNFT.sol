@@ -6,11 +6,15 @@ import "@openzeppelin/contracts/security/ReentrancyGuard.sol";
 import '@openzeppelin/contracts/utils/cryptography/MerkleProof.sol';
 import "./lib/ERC721A.sol";
 
-// Supply: 20000
-// All 20,000 are priced at 0.1 ETH
-// Paid allowlist
-// Free allowlist
-// Max 5 mint/wallet
+
+// Name: "tokenproof Founders Circle"
+// Symbol: TKPFC
+// 20,000 supply
+// free allowlist
+// paid allowlist @ 0.1 ETH
+// public mint    @ 0.1 ETH
+// max 1 free claim/account. No way to free claim from same address twice.
+// max 5 mints/account, not including free claim.
 contract TokenproofFoundersCircleNFT is ERC721A, Ownable, ReentrancyGuard {
 
     using Strings for uint256;
