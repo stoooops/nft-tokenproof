@@ -16,7 +16,7 @@ contract TokenproofFoundersCircleNFT is ERC721A, Ownable, ReentrancyGuard {
     using Strings for uint256;
 
     // IPFS URI for metadata
-    string _baseTokenURI = "ipfs://QmV7yYX4BdWttXaAdBbPAPikyZFYfxDrhpkbLiLHMB8mwd";
+    string _baseTokenURI;
 
     // mint paused/unpaused
     bool public _isFreeClaimActive = false;
@@ -27,7 +27,7 @@ contract TokenproofFoundersCircleNFT is ERC721A, Ownable, ReentrancyGuard {
     // allowlist for freeClaim
     bytes32 public merkleRootFreeClaim;
 
-    constructor(string memory baseURI) ERC721A("tokenproof Founders Circle", "TKPFC", 50, 5000)  {
+    constructor(string memory baseURI) ERC721A("tokenproof Founders Circle", "TKPFC", 100, 5000)  {
         setBaseURI(baseURI);
     }
 
@@ -83,6 +83,10 @@ contract TokenproofFoundersCircleNFT is ERC721A, Ownable, ReentrancyGuard {
 
         // ERC721A mint
         _safeMint(msg.sender, 1);
+    }
+
+    function devMint(uint256 n) public onlyOwner {
+        _safeMint(msg.sender, n);
     }
 
     ////////////////////////////////////////////////////////////////////////////////////

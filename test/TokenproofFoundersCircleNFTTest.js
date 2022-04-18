@@ -51,6 +51,36 @@ describe('TokenproofFoundersCircleNFT', function () {
   describe('Mint', function () {
 
     /// /////////////////////////////////////////////////////////////////////////////////
+    // devMint TESTS
+    /// /////////////////////////////////////////////////////////////////////////////////
+    describe('devMint', function () {
+        beforeEach(async function () {
+        });
+
+        it('Should be able to devMint max supply', async function () {
+          await nftContract.connect(owner).devMint(1);
+          let supply = 1;
+          expect(await nftContract.totalSupply()).to.equal(supply);
+          expect(await nftContract.tokenURI(0)).to.equal(TEST_URI);
+
+          await nftContract.connect(owner).devMint(10);
+          supply = supply + 10;
+          expect(await nftContract.totalSupply()).to.equal(supply);
+          for (let i = 0; i < supply; i++) {
+            expect(await nftContract.tokenURI(i)).to.equal(TEST_URI);
+          }
+
+          await nftContract.connect(owner).devMint(100);
+          supply = supply + 100;
+          expect(await nftContract.totalSupply()).to.equal(supply);
+          for (let i = 0; i < supply; i++) {
+            expect(await nftContract.tokenURI(i)).to.equal(TEST_URI);
+          }
+        });
+
+    });
+
+    /// /////////////////////////////////////////////////////////////////////////////////
     // freeClaim TESTS
     /// /////////////////////////////////////////////////////////////////////////////////
     describe('freeClaim', function () {

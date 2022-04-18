@@ -18,7 +18,7 @@ async function main() {
 
   // We get the contract to deploy
   const TokenproofFoundersCircleNFT = await hre.ethers.getContractFactory('TokenproofFoundersCircleNFT');
-  const token = await TokenproofFoundersCircleNFT.deploy('ipfs://QmQvcDYz5CVMdt2EeYyGAQJeZ83iWACpPqEEVo2Tb3STjK');
+  const token = await TokenproofFoundersCircleNFT.deploy('ipfs://QmV7yYX4BdWttXaAdBbPAPikyZFYfxDrhpkbLiLHMB8mwd');
 
   await token.deployed();
 
