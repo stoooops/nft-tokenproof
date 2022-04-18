@@ -11,3 +11,6 @@ Twitter: https://twitter.com/tokenproof
 - 5,000 supply
 - free allowlist
 - max one free claim per address
+
+# Deploy
+npx hardhat run scripts/deploy.js --network ropsten --verbose
