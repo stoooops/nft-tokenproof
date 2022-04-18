@@ -1,8 +1,8 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.4;
 
-import '@openzeppelin/contracts/access/Ownable.sol';
-import '@openzeppelin/contracts/utils/cryptography/MerkleProof.sol';
+import "@openzeppelin/contracts/access/Ownable.sol";
+import "@openzeppelin/contracts/utils/cryptography/MerkleProof.sol";
 import "erc721a/contracts/ERC721A.sol";
 
 
@@ -71,7 +71,7 @@ contract TokenproofFoundersCircleNFT is ERC721A, Ownable {
 
     function mint(bytes32[] calldata _merkleProof) external payable {
         // ensure active mint
-        require( _isMintActive,  "Free claim not active" );
+        require( _isMintActive, "Free claim not active");
 
         // ensure not already free claimed
         require(!_hasMinted[msg.sender], "Address has already free claimed");
