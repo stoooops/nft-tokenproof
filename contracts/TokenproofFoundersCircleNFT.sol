@@ -2,16 +2,15 @@
 pragma solidity ^0.8.4;
 
 import '@openzeppelin/contracts/access/Ownable.sol';
-import "@openzeppelin/contracts/security/ReentrancyGuard.sol";
 import '@openzeppelin/contracts/utils/cryptography/MerkleProof.sol';
-import "./lib/ERC721A.sol";
+import "erc721a/contracts/ERC721A.sol";
 
 
 // Name: "tokenproof Founders Circle"
 // Symbol: TKPFC
 // 5,000 supply
 // free allowlist
-contract TokenproofFoundersCircleNFT is ERC721A, Ownable, ReentrancyGuard {
+contract TokenproofFoundersCircleNFT is ERC721A, Ownable {
 
     using Strings for uint256;
 
@@ -27,7 +26,7 @@ contract TokenproofFoundersCircleNFT is ERC721A, Ownable, ReentrancyGuard {
     // allowlist for freeClaim
     bytes32 public merkleRootFreeClaim;
 
-    constructor(string memory baseURI) ERC721A("tokenproof Founders Circle", "TKPFC", 100, 5000)  {
+    constructor(string memory baseURI) ERC721A("tokenproof Founders Circle", "TKPFC")  {
         setBaseURI(baseURI);
     }
 
@@ -69,8 +68,8 @@ contract TokenproofFoundersCircleNFT is ERC721A, Ownable, ReentrancyGuard {
         _isFreeClaimActive = val;
     }
 
-    function freeClaim(bytes32[] calldata _merkleProof) external payable nonReentrant {
-        // ensure active preSale
+    function freeClaim(bytes32[] calldata _merkleProof) external payable {
+        // ensure active freeClaim
         require( _isFreeClaimActive,  "Free claim not active" );
 
         // ensure not already free claimed
@@ -91,20 +90,6 @@ contract TokenproofFoundersCircleNFT is ERC721A, Ownable, ReentrancyGuard {
         _safeMint(msg.sender, n);
         // the version of ERC721A included here does not enforce max supply so we do it ourself
         require(5001 > totalSupply(), "Max supply already has been minted");
-    }
-
-    ////////////////////////////////////////////////////////////////////////////////////
-    // Helpers
-    ////////////////////////////////////////////////////////////////////////////////////
-
-    function walletOfOwner(address _owner) public view returns(uint256[] memory) {
-        uint256 tokenCount = balanceOf(_owner);
-
-        uint256[] memory tokensId = new uint256[](tokenCount);
-        for(uint256 i; i < tokenCount; i++){
-            tokensId[i] = tokenOfOwnerByIndex(_owner, i);
-        }
-        return tokensId;
     }
 
     ////////////////////////////////////////////////////////////////////////////////////
