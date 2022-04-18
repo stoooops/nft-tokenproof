@@ -19,13 +19,13 @@ contract TokenproofFoundersCircleNFT is ERC721A, Ownable {
     string _baseTokenURI;
 
     // mint paused/unpaused
-    bool public _isFreeClaimActive = false;
+    bool public _isMintActive = false;
 
     // track who called free claim already to disallow repeated calls
-    mapping(address => bool) private _hasFreeClaimed;
+    mapping(address => bool) private _hasMinted;
 
-    // allowlist for freeClaim
-    bytes32 public merkleRootFreeClaim;
+    // allowlist for mint
+    bytes32 public merkleRootMint;
 
     constructor(string memory baseURI) ERC721A("tokenproof Founders Circle", "TKPFC")  {
         setBaseURI(baseURI);
@@ -57,29 +57,29 @@ contract TokenproofFoundersCircleNFT is ERC721A, Ownable {
     // Merkle Tree updateable if needed
     ////////////////////////////////////////////////////////////////////////////////////
 
-    function setAllowListFreeClaim(bytes32 newRoot) public onlyOwner {
-        merkleRootFreeClaim = newRoot;
+    function setAllowListMint(bytes32 newRoot) public onlyOwner {
+        merkleRootMint = newRoot;
     }
 
     ////////////////////////////////////////////////////////////////////////////////////
     // mint
     ////////////////////////////////////////////////////////////////////////////////////
 
-    function setIsFreeClaimActive(bool val) public onlyOwner {
-        _isFreeClaimActive = val;
+    function setIsMintActive(bool val) public onlyOwner {
+        _isMintActive = val;
     }
 
-    function freeClaim(bytes32[] calldata _merkleProof) external payable {
-        // ensure active freeClaim
-        require( _isFreeClaimActive,  "Free claim not active" );
+    function mint(bytes32[] calldata _merkleProof) external payable {
+        // ensure active mint
+        require( _isMintActive,  "Free claim not active" );
 
         // ensure not already free claimed
-        require(!_hasFreeClaimed[msg.sender], "Address has already free claimed");
-        _hasFreeClaimed[msg.sender] = true;
+        require(!_hasMinted[msg.sender], "Address has already free claimed");
+        _hasMinted[msg.sender] = true;
 
         // ensure correct merkle proof supplied
         bytes32 leaf = keccak256(abi.encodePacked(msg.sender));
-        require(MerkleProof.verify(_merkleProof, merkleRootFreeClaim, leaf), "Invalid proof.");
+        require(MerkleProof.verify(_merkleProof, merkleRootMint, leaf), "Invalid proof.");
 
         // ERC721A mint
         // the version of ERC721A included here does not enforce max supply so we do it ourself

@@ -55,9 +55,9 @@ describe('TokenproofFoundersCircleNFT', function () {
 
   describe('Mint', function () {
 
-    /// /////////////////////////////////////////////////////////////////////////////////
+    ////////////////////////////////////////////////////////////////////////////////////
     // devMint TESTS
-    /// /////////////////////////////////////////////////////////////////////////////////
+    ////////////////////////////////////////////////////////////////////////////////////
     describe('devMint', function () {
         beforeEach(async function () {
         });
@@ -125,76 +125,76 @@ describe('TokenproofFoundersCircleNFT', function () {
 
     });
 
-    /// /////////////////////////////////////////////////////////////////////////////////
-    // freeClaim TESTS
-    /// /////////////////////////////////////////////////////////////////////////////////
-    describe('freeClaim', function () {
+    ////////////////////////////////////////////////////////////////////////////////////
+    // mint TESTS
+    ////////////////////////////////////////////////////////////////////////////////////
+    describe('mint', function () {
       beforeEach(async function () {
-        await nftContract.connect(owner).setAllowListFreeClaim(TEST_MERKLE_ROOT);
-        await nftContract.setIsFreeClaimActive(true);
+        await nftContract.connect(owner).setAllowListMint(TEST_MERKLE_ROOT);
+        await nftContract.setIsMintActive(true);
       });
 
       it('Should be able to set new allowlist merkle root', async function () {
-        await nftContract.connect(owner).setAllowListFreeClaim("0x0000000000000000000000000000000000000000000000000000000123456789");
+        await nftContract.connect(owner).setAllowListMint("0x0000000000000000000000000000000000000000000000000000000123456789");
 
         // standard merkleproof
         // merkle proof for #1
         const merkleProof = merkleTree.getHexProof(keccak256(allowlist1.address));
 
         // unable to free claim since merkle root was changed
-        await expect(nftContract.connect(allowlist1).freeClaim(merkleProof)).to.be.revertedWith(
+        await expect(nftContract.connect(allowlist1).mint(merkleProof)).to.be.revertedWith(
           ERROR_MSG_INVALID_PROOF
         );
       });
 
-      it('Should be able to pause/unpause freeClaim', async function () {
+      it('Should be able to pause/unpause mint', async function () {
         const merkleProof = merkleTree.getHexProof(keccak256(allowlist1.address));
         // pause
-        await nftContract.setIsFreeClaimActive(false);
-        await expect(nftContract.connect(allowlist1).freeClaim(merkleProof)).to.be.revertedWith(
+        await nftContract.setIsMintActive(false);
+        await expect(nftContract.connect(allowlist1).mint(merkleProof)).to.be.revertedWith(
           ERROR_MSG_FREE_CLAIM_NOT_ACTIVE
         );
 
         // unpause
-        await nftContract.setIsFreeClaimActive(true);
-        await nftContract.connect(allowlist1).freeClaim(merkleProof);
+        await nftContract.setIsMintActive(true);
+        await nftContract.connect(allowlist1).mint(merkleProof);
       });
 
-      it('Should be able to allowlist freeClaim NFT #0', async function () {
+      it('Should be able to allowlist mint NFT #0', async function () {
         const merkleProof = merkleTree.getHexProof(keccak256(allowlist1.address));
-        await nftContract.connect(allowlist1).freeClaim(merkleProof);
+        await nftContract.connect(allowlist1).mint(merkleProof);
 
         expect(await nftContract.totalSupply()).to.equal(1);
         expect(await nftContract.tokenURI(0)).to.equal(TEST_URI);
       });
 
-      it('Should be able to allowlist freeClaim NFT #0, #1, #2', async function () {
+      it('Should be able to allowlist mint NFT #0, #1, #2', async function () {
         const allowlists = [allowlist1, allowlist2, allowlist3];
         for (const addr of allowlists) {
           const merkleProof = merkleTree.getHexProof(keccak256(addr.address));
-          await nftContract.connect(addr).freeClaim(merkleProof);
+          await nftContract.connect(addr).mint(merkleProof);
         }
 
         expect(await nftContract.totalSupply()).to.equal(allowlists.length);
       });
 
-      it('Should be able to allowlist freeClaim NFT #0 but not a second', async function () {
+      it('Should be able to allowlist mint NFT #0 but not a second', async function () {
         const merkleProof = merkleTree.getHexProof(keccak256(allowlist1.address));
-        await nftContract.connect(allowlist1).freeClaim(merkleProof);
+        await nftContract.connect(allowlist1).mint(merkleProof);
 
-        await expect(nftContract.connect(allowlist1).freeClaim(merkleProof)).to.be.revertedWith(
+        await expect(nftContract.connect(allowlist1).mint(merkleProof)).to.be.revertedWith(
           ERROR_MSG_ALREADY_FREE_CLAIMED
         );
       });
 
-      it('Should not be able to freeClaim, transfer, freeClaim same wallet', async function () {
+      it('Should not be able to mint, transfer, mint same wallet', async function () {
         // should succeed
         const merkleProof = merkleTree.getHexProof(keccak256(allowlist1.address));
-        await nftContract.connect(allowlist1).freeClaim(merkleProof);
+        await nftContract.connect(allowlist1).mint(merkleProof);
         await nftContract.connect(allowlist1).transferFrom(allowlist1.address, owner.address, 0);
 
         // should fail because already minted from that wallet
-        await expect(nftContract.connect(allowlist1).freeClaim(merkleProof)).to.be.revertedWith(
+        await expect(nftContract.connect(allowlist1).mint(merkleProof)).to.be.revertedWith(
           ERROR_MSG_ALREADY_FREE_CLAIMED
         );
       });
@@ -204,10 +204,10 @@ describe('TokenproofFoundersCircleNFT', function () {
         const merkleProof = merkleTree.getHexProof(keccak256(allowlist1.address));
 
         // transact with #2
-        await expect(nftContract.connect(allowlist2).freeClaim(merkleProof)).to.be.revertedWith(
+        await expect(nftContract.connect(allowlist2).mint(merkleProof)).to.be.revertedWith(
           ERROR_MSG_INVALID_PROOF
         );
-        await expect(nftContract.connect(other).freeClaim(merkleProof)).to.be.revertedWith(ERROR_MSG_INVALID_PROOF);
+        await expect(nftContract.connect(other).mint(merkleProof)).to.be.revertedWith(ERROR_MSG_INVALID_PROOF);
       });
     });
   });
