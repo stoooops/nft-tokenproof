@@ -82,11 +82,15 @@ contract TokenproofFoundersCircleNFT is ERC721A, Ownable, ReentrancyGuard {
         require(MerkleProof.verify(_merkleProof, merkleRootFreeClaim, leaf), "Invalid proof.");
 
         // ERC721A mint
+        // the version of ERC721A included here does not enforce max supply so we do it ourself
+        require(totalSupply() < 5000, "Max supply already has been minted");
         _safeMint(msg.sender, 1);
     }
 
     function devMint(uint256 n) public onlyOwner {
         _safeMint(msg.sender, n);
+        // the version of ERC721A included here does not enforce max supply so we do it ourself
+        require(5001 > totalSupply(), "Max supply already has been minted");
     }
 
     ////////////////////////////////////////////////////////////////////////////////////

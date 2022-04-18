@@ -12,10 +12,15 @@ const TEST_MERKLE_ROOT = "0x95758bb7678be816e57e10f33116431676b9263618ea7f42b2e4
 
 const TEST_URI = 'https://test_uri/';
 
+const MAX_MINT_BATCH = 100;
+const MAX_SUPPLY = 5000;
+
 const ERROR_MSG_ALREADY_FREE_CLAIMED = 'Address has already free claimed';
 const ERROR_MSG_CALLER_IS_NOT_THE_OWNER = 'Ownable: caller is not the owner';
 const ERROR_MSG_FREE_CLAIM_NOT_ACTIVE = 'Free claim not active';
 const ERROR_MSG_INVALID_PROOF = 'Invalid proof';
+const ERROR_MSG_ERC721A_MINT_QUANTITY_TOO_HIGH = "ERC721A: quantity to mint too high";
+const ERROR_MSG_MAX_SUPPLY_ALREADY_MINTED = "Max supply already has been minted";
 
 describe('TokenproofFoundersCircleNFT', function () {
   let owner, allowlist1, allowlist2, allowlist3, other;
@@ -57,25 +62,64 @@ describe('TokenproofFoundersCircleNFT', function () {
         beforeEach(async function () {
         });
 
-        it('Should be able to devMint max supply', async function () {
+        it('Should be able to devMint', async function () {
           await nftContract.connect(owner).devMint(1);
           let supply = 1;
           expect(await nftContract.totalSupply()).to.equal(supply);
           expect(await nftContract.tokenURI(0)).to.equal(TEST_URI);
+          expect(await nftContract.ownerOf(0)).to.equal(owner.address);
+        });
 
-          await nftContract.connect(owner).devMint(10);
-          supply = supply + 10;
+        it('Only owner can call devMint', async function () {
+          await expect(nftContract.connect(allowlist1).devMint(1)).to.be.revertedWith(ERROR_MSG_CALLER_IS_NOT_THE_OWNER);
+          await expect(nftContract.connect(allowlist2).devMint(1)).to.be.revertedWith(ERROR_MSG_CALLER_IS_NOT_THE_OWNER);
+          await expect(nftContract.connect(allowlist3).devMint(1)).to.be.revertedWith(ERROR_MSG_CALLER_IS_NOT_THE_OWNER);
+          await expect(nftContract.connect(other).devMint(1)).to.be.revertedWith(ERROR_MSG_CALLER_IS_NOT_THE_OWNER);
+        });
+
+        it('Should be able to devMint max batch size', async function () {
+          await nftContract.connect(owner).devMint(MAX_MINT_BATCH);
+          expect(await nftContract.totalSupply()).to.equal(MAX_MINT_BATCH);
+          for (let i = 0; i < MAX_MINT_BATCH; i++) {
+            expect(await nftContract.tokenURI(i)).to.equal(TEST_URI);
+            expect(await nftContract.ownerOf(i)).to.equal(owner.address);
+          }
+        });
+
+        it('Should not be able to devMint > max batch size', async function () {
+          await expect(nftContract.connect(owner).devMint(MAX_MINT_BATCH + 1)).to.be.revertedWith(ERROR_MSG_ERC721A_MINT_QUANTITY_TOO_HIGH);
+        });
+
+        it('Should be able to devMint max supply', async function () {
+          // mint 1
+          await nftContract.connect(owner).devMint(1);
+          let supply = 1;
+          expect(await nftContract.totalSupply()).to.equal(supply);
+          expect(await nftContract.tokenURI(0)).to.equal(TEST_URI);
+          expect(await nftContract.ownerOf(0)).to.equal(owner.address);
+
+          // mint max batch
+          await nftContract.connect(owner).devMint(MAX_MINT_BATCH);
+          supply = supply + MAX_MINT_BATCH;
           expect(await nftContract.totalSupply()).to.equal(supply);
           for (let i = 0; i < supply; i++) {
             expect(await nftContract.tokenURI(i)).to.equal(TEST_URI);
+            expect(await nftContract.ownerOf(i)).to.equal(owner.address);
           }
 
-          await nftContract.connect(owner).devMint(100);
-          supply = supply + 100;
-          expect(await nftContract.totalSupply()).to.equal(supply);
-          for (let i = 0; i < supply; i++) {
-            expect(await nftContract.tokenURI(i)).to.equal(TEST_URI);
+          // mint up to max supply in batches
+          while (supply + MAX_MINT_BATCH < MAX_SUPPLY) {
+            await nftContract.connect(owner).devMint(100);
+            supply = supply + MAX_MINT_BATCH;
+            expect(await nftContract.totalSupply()).to.equal(supply);
           }
+          // mint remaining
+          await nftContract.connect(owner).devMint(MAX_SUPPLY - supply);
+          expect(await nftContract.totalSupply()).to.equal(MAX_SUPPLY);
+
+          // cannot mint more
+          await expect(nftContract.connect(owner).devMint(1)).to.be.revertedWith(ERROR_MSG_MAX_SUPPLY_ALREADY_MINTED);
+          expect(await nftContract.totalSupply()).to.equal(MAX_SUPPLY);
         });
 
     });
