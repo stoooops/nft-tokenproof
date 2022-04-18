@@ -35,7 +35,7 @@ contract TokenproofFoundersCircleNFT is ERC721A, Ownable {
     ////////////////////////////////////////////////////////////////////////////////////
 
     function tokenURI(uint256 tokenId) public view virtual override returns (string memory) {
-        require(_exists(tokenId), "ERC721Metadata: URI query for nonexistent token");
+        if (!_exists(tokenId)) revert URIQueryForNonexistentToken();
 
         return string(abi.encodePacked(_baseTokenURI));
     }
@@ -53,7 +53,7 @@ contract TokenproofFoundersCircleNFT is ERC721A, Ownable {
     }
 
     ////////////////////////////////////////////////////////////////////////////////////
-    // Merkle Tree updates if needed
+    // Merkle Tree updateable if needed
     ////////////////////////////////////////////////////////////////////////////////////
 
     function setAllowListFreeClaim(bytes32 newRoot) public onlyOwner {
@@ -61,7 +61,7 @@ contract TokenproofFoundersCircleNFT is ERC721A, Ownable {
     }
 
     ////////////////////////////////////////////////////////////////////////////////////
-    // Mint Function
+    // mint
     ////////////////////////////////////////////////////////////////////////////////////
 
     function setIsFreeClaimActive(bool val) public onlyOwner {

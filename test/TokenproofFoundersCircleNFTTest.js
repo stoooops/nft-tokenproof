@@ -12,7 +12,7 @@ const TEST_MERKLE_ROOT = "0x95758bb7678be816e57e10f33116431676b9263618ea7f42b2e4
 
 const TEST_URI = 'https://test_uri/';
 
-const MAX_MINT_BATCH = 100;
+const MINT_BATCH = 100;
 const MAX_SUPPLY = 5000;
 
 const ERROR_MSG_ALREADY_FREE_CLAIMED = 'Address has already free claimed';
@@ -64,8 +64,7 @@ describe('TokenproofFoundersCircleNFT', function () {
 
         it('Should be able to devMint', async function () {
           await nftContract.connect(owner).devMint(1);
-          let supply = 1;
-          expect(await nftContract.totalSupply()).to.equal(supply);
+          expect(await nftContract.totalSupply()).to.equal(1);
           expect(await nftContract.tokenURI(0)).to.equal(TEST_URI);
           expect(await nftContract.ownerOf(0)).to.equal(owner.address);
         });
@@ -78,16 +77,12 @@ describe('TokenproofFoundersCircleNFT', function () {
         });
 
         it('Should be able to devMint max batch size', async function () {
-          await nftContract.connect(owner).devMint(MAX_MINT_BATCH);
-          expect(await nftContract.totalSupply()).to.equal(MAX_MINT_BATCH);
-          for (let i = 0; i < MAX_MINT_BATCH; i++) {
+          await nftContract.connect(owner).devMint(MINT_BATCH);
+          expect(await nftContract.totalSupply()).to.equal(MINT_BATCH);
+          for (let i = 0; i < MINT_BATCH; i++) {
             expect(await nftContract.tokenURI(i)).to.equal(TEST_URI);
             expect(await nftContract.ownerOf(i)).to.equal(owner.address);
           }
-        });
-
-        it('Should not be able to devMint > max batch size', async function () {
-          await expect(nftContract.connect(owner).devMint(MAX_MINT_BATCH + 1)).to.be.revertedWith(ERROR_MSG_ERC721A_MINT_QUANTITY_TOO_HIGH);
         });
 
         it('Should be able to devMint max supply', async function () {
@@ -99,8 +94,8 @@ describe('TokenproofFoundersCircleNFT', function () {
           expect(await nftContract.ownerOf(0)).to.equal(owner.address);
 
           // mint max batch
-          await nftContract.connect(owner).devMint(MAX_MINT_BATCH);
-          supply = supply + MAX_MINT_BATCH;
+          await nftContract.connect(owner).devMint(MINT_BATCH);
+          supply = supply + MINT_BATCH;
           expect(await nftContract.totalSupply()).to.equal(supply);
           for (let i = 0; i < supply; i++) {
             expect(await nftContract.tokenURI(i)).to.equal(TEST_URI);
@@ -108,9 +103,9 @@ describe('TokenproofFoundersCircleNFT', function () {
           }
 
           // mint up to max supply in batches
-          while (supply + MAX_MINT_BATCH < MAX_SUPPLY) {
+          while (supply + MINT_BATCH < MAX_SUPPLY) {
             await nftContract.connect(owner).devMint(100);
-            supply = supply + MAX_MINT_BATCH;
+            supply = supply + MINT_BATCH;
             expect(await nftContract.totalSupply()).to.equal(supply);
           }
           // mint remaining
@@ -119,6 +114,12 @@ describe('TokenproofFoundersCircleNFT', function () {
 
           // cannot mint more
           await expect(nftContract.connect(owner).devMint(1)).to.be.revertedWith(ERROR_MSG_MAX_SUPPLY_ALREADY_MINTED);
+          expect(await nftContract.totalSupply()).to.equal(MAX_SUPPLY);
+        });
+
+        it('Should be able to devMint max supply in single call', async function () {
+          // mint 1
+          await nftContract.connect(owner).devMint(MAX_SUPPLY);
           expect(await nftContract.totalSupply()).to.equal(MAX_SUPPLY);
         });
 
