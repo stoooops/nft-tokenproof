@@ -49,17 +49,27 @@ describe('TokenproofFoundersCircleNFT', function () {
   });
 
   describe('Mint', function () {
+
     /// /////////////////////////////////////////////////////////////////////////////////
     // freeClaim TESTS
     /// /////////////////////////////////////////////////////////////////////////////////
     describe('freeClaim', function () {
       beforeEach(async function () {
-        await nftContract.setIsFreeClaimActive(true);
         await nftContract.connect(owner).setAllowListFreeClaim(TEST_MERKLE_ROOT);
+        await nftContract.setIsFreeClaimActive(true);
       });
 
       it('Should be able to set new allowlist merkle root', async function () {
-        await nftContract.connect(owner).setAllowListFreeClaim(TEST_MERKLE_ROOT);
+        await nftContract.connect(owner).setAllowListFreeClaim("0x0000000000000000000000000000000000000000000000000000000123456789");
+
+        // standard merkleproof
+        // merkle proof for #1
+        const merkleProof = merkleTree.getHexProof(keccak256(allowlist1.address));
+
+        // unable to free claim since merkle root was changed
+        await expect(nftContract.connect(allowlist1).freeClaim(merkleProof)).to.be.revertedWith(
+          ERROR_MSG_INVALID_PROOF
+        );
       });
 
       it('Should be able to pause/unpause freeClaim', async function () {
