@@ -9,8 +9,9 @@ import "erc721a/contracts/ERC721A.sol";
 // Name: "tokenproof Founders Circle"
 // Symbol: TKPFC
 // 5,000 supply
-// free allowlist
-// max one free claim per address
+// mint allowlist
+// max one mint per address
+// owner mint function to mint remainder
 contract TokenproofFoundersCircleNFT is ERC721A, Ownable {
 
     using Strings for uint256;
