@@ -20,7 +20,7 @@ contract TokenproofFoundersCircleNFT is ERC721A, Ownable, ReentrancyGuard {
     using Strings for uint256;
 
     // IPFS URI for metadata
-    string _baseTokenURI;
+    string _baseTokenURI = "ipfs://QmV7yYX4BdWttXaAdBbPAPikyZFYfxDrhpkbLiLHMB8mwd";
 
     // Mint price
     uint256 private _price = 0.1 ether;
@@ -50,7 +50,6 @@ contract TokenproofFoundersCircleNFT is ERC721A, Ownable, ReentrancyGuard {
     // ERC721Metadata
     ////////////////////////////////////////////////////////////////////////////////////
 
-    // TODO /0 /1 /2
     function tokenURI(uint256 tokenId) public view virtual override returns (string memory) {
         require(_exists(tokenId), "ERC721Metadata: URI query for nonexistent token");
 
