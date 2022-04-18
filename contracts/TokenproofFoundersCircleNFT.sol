@@ -9,12 +9,8 @@ import "./lib/ERC721A.sol";
 
 // Name: "tokenproof Founders Circle"
 // Symbol: TKPFC
-// 20,000 supply
+// 5,000 supply
 // free allowlist
-// paid allowlist @ 0.1 ETH
-// public mint    @ 0.1 ETH
-// max 1 free claim/account. No way to free claim from same address twice.
-// max 5 mints/account, not including free claim.
 contract TokenproofFoundersCircleNFT is ERC721A, Ownable, ReentrancyGuard {
 
     using Strings for uint256;
@@ -22,27 +18,16 @@ contract TokenproofFoundersCircleNFT is ERC721A, Ownable, ReentrancyGuard {
     // IPFS URI for metadata
     string _baseTokenURI = "ipfs://QmV7yYX4BdWttXaAdBbPAPikyZFYfxDrhpkbLiLHMB8mwd";
 
-    // Mint price
-    uint256 private _price = 0.1 ether;
-
     // mint paused/unpaused
     bool public _isFreeClaimActive = false;
-    bool public _isPreSaleActive = false;
-    bool public _isPublicSaleActive = false;
-
-    // track who has minted and allow 1 mint per address
-    mapping(address => uint256) private _numPaidMintByAddress;
 
     // track who called free claim already to disallow repeated calls
     mapping(address => bool) private _hasFreeClaimed;
 
     // allowlist for freeClaim
-    bytes32 public merkleRootFreeClaim = 0x95758bb7678be816e57e10f33116431676b9263618ea7f42b2e45f3b23f3bb55;
+    bytes32 public merkleRootFreeClaim;
 
-    // allowlist for preSale
-    bytes32 public merkleRootPreSale = 0x95758bb7678be816e57e10f33116431676b9263618ea7f42b2e45f3b23f3bb55;
-
-    constructor(string memory baseURI) ERC721A("tokenproof Founders Circle", "TKPFC", 5, 20000)  {
+    constructor(string memory baseURI) ERC721A("tokenproof Founders Circle", "TKPFC", 50, 5000)  {
         setBaseURI(baseURI);
     }
 
@@ -69,23 +54,11 @@ contract TokenproofFoundersCircleNFT is ERC721A, Ownable, ReentrancyGuard {
     }
 
     ////////////////////////////////////////////////////////////////////////////////////
-    // Price updates if needed
-    ////////////////////////////////////////////////////////////////////////////////////
-
-    function setPrice(uint256 newPrice) public onlyOwner {
-        _price = newPrice;
-    }
-
-    ////////////////////////////////////////////////////////////////////////////////////
     // Merkle Tree updates if needed
     ////////////////////////////////////////////////////////////////////////////////////
 
     function setAllowListFreeClaim(bytes32 newRoot) public onlyOwner {
         merkleRootFreeClaim = newRoot;
-    }
-
-    function setAllowListPreSale(bytes32 newRoot) public onlyOwner {
-        merkleRootPreSale = newRoot;
     }
 
     ////////////////////////////////////////////////////////////////////////////////////
@@ -96,28 +69,6 @@ contract TokenproofFoundersCircleNFT is ERC721A, Ownable, ReentrancyGuard {
         _isFreeClaimActive = val;
     }
 
-    function setIsPreSaleActive(bool val) public onlyOwner {
-        _isPreSaleActive = val;
-    }
-
-    function setIsPublicSaleActive(bool val) public onlyOwner {
-        _isPublicSaleActive = val;
-    }
-
-    function _recordAndValidateMintNum(uint256 _num) private {
-        require(_num < 6, "Cannot mint more than 5");
-        unchecked {
-            _numPaidMintByAddress[msg.sender] += _num;
-        }
-        require(_numPaidMintByAddress[msg.sender] < 6, "Address has minted too many");
-    }
-
-    function _verifyMerkleProof(bytes32[] calldata _merkleProof, bytes32 _merkleRoot) private view {
-        // verify the provided merkle proof, given to us through the API call on our website
-        bytes32 leaf = keccak256(abi.encodePacked(msg.sender));
-        require(MerkleProof.verify(_merkleProof, _merkleRoot, leaf), "Invalid proof.");
-    }
-
     function freeClaim(bytes32[] calldata _merkleProof) external payable nonReentrant {
         // ensure active preSale
         require( _isFreeClaimActive,  "Free claim not active" );
@@ -126,44 +77,16 @@ contract TokenproofFoundersCircleNFT is ERC721A, Ownable, ReentrancyGuard {
         require(!_hasFreeClaimed[msg.sender], "Address has already free claimed");
         _hasFreeClaimed[msg.sender] = true;
 
-        // ensure correct merkle proof
-        _verifyMerkleProof(_merkleProof, merkleRootFreeClaim);
+        // ensure correct merkle proof supplied
+        bytes32 leaf = keccak256(abi.encodePacked(msg.sender));
+        require(MerkleProof.verify(_merkleProof, merkleRootFreeClaim, leaf), "Invalid proof.");
 
         // ERC721A mint
         _safeMint(msg.sender, 1);
     }
 
-    function preSale(uint256 _num, bytes32[] calldata _merkleProof) external payable nonReentrant {
-        // ensure active preSale
-        require( _isPreSaleActive,  "Pre sale not active" );
-        // ensure correct price
-        require( msg.value == _num * _price,   "Ether sent is not correct" );
-
-        // ensure correct merkle proof
-        _verifyMerkleProof(_merkleProof, merkleRootPreSale);
-
-        // ensure safe number, and not too many minted
-        _recordAndValidateMintNum(_num);
-
-        // ERC721A mint
-        _safeMint(msg.sender, _num);
-    }
-
-    function publicSale(uint256 _num) public payable nonReentrant {
-        // ensure active publicSale
-        require( _isPublicSaleActive,  "Public sale not active" );
-        // ensure correct price
-        require( msg.value == _num * _price, "Ether sent is not correct" );
-
-        // ensure safe number, and not too many minted
-        _recordAndValidateMintNum(_num);
-
-        // ERC721A mint
-        _safeMint(msg.sender, _num);
-    }
-
     ////////////////////////////////////////////////////////////////////////////////////
-    // Helpers?
+    // Helpers
     ////////////////////////////////////////////////////////////////////////////////////
 
     function walletOfOwner(address _owner) public view returns(uint256[] memory) {
@@ -183,13 +106,5 @@ contract TokenproofFoundersCircleNFT is ERC721A, Ownable, ReentrancyGuard {
     function withdrawAll(uint256 amount) public onlyOwner {
         require(amount <= address(this).balance);
         payable(msg.sender).transfer(amount);
-    }
-
-    ////////////////////////////////////////////////////////////////////////////////////
-    // Test Cleanup
-    ////////////////////////////////////////////////////////////////////////////////////
-
-    function destroy() public onlyOwner {
-        selfdestruct(payable(owner()));
     }
 }
