@@ -10,6 +10,7 @@ import "erc721a/contracts/ERC721A.sol";
 // Symbol: TKPFC
 // 5,000 supply
 // free allowlist
+// max one free claim per address
 contract TokenproofFoundersCircleNFT is ERC721A, Ownable {
 
     using Strings for uint256;
